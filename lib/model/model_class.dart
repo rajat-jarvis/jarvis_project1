@@ -14,6 +14,28 @@ class EditableTextItem {
     this.colorHex = '000000',
     this.fontWeight = 'FontWeight.w400',
   });
+
+  Map<String, dynamic> toJson(){
+    return {
+      "name":text,
+      "left":x,
+      "top":y,
+      "fontSize":fontSize,
+      "Color":colorHex,
+      "fontWeight":fontWeight,
+    };
+  }
+
+  factory EditableTextItem.fromJson(Map<String, dynamic> json) {
+    return EditableTextItem(
+      text: json['text'],
+      x: (json['x'] as num).toDouble(),
+      y: (json['y'] as num).toDouble(),
+      fontSize: (json['fontSize'] as num).toDouble(),
+      colorHex: json['colorHex'],
+      fontWeight: json['fontWeight'],
+    );
+  }
 }
 
 // final List<Map<String, dynamic>> jsonData = [

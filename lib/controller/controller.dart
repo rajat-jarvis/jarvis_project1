@@ -4,6 +4,8 @@ import '../model/model_class.dart';
 class EditableTextController extends GetxController {
   var texts = <EditableTextItem>[].obs;
   var selectedIndex = RxnInt();
+  EditableTextItem? lastDeletedItem;
+  int? lastDeletedIndex;
 
   void select(int index) {
     selectedIndex.value = index;
@@ -26,11 +28,30 @@ class EditableTextController extends GetxController {
 
   void deleteSelected() {
     if (selectedIndex.value == null) return;
-    texts.removeAt(selectedIndex.value!);
+
+    lastDeletedIndex = selectedIndex.value;
+    lastDeletedItem = texts[lastDeletedIndex!];
+
+    texts.removeAt(lastDeletedIndex!);
     selectedIndex.value = null;
   }
+
+  void restoreLastDeleted() {
+    if (lastDeletedItem == null || lastDeletedIndex == null) return;
+
+    texts.insert(lastDeletedIndex!, lastDeletedItem!);
+
+    selectedIndex.value = lastDeletedIndex;
+
+    lastDeletedItem = null;
+    lastDeletedIndex = null;
+  }
+
+  void submitText() {
+    final List<Map<String, dynamic>> textDetails = texts
+        .map((item) => item.toJson())
+        .toList();
+
+    print(textDetails);
+  }
 }
-
-
-
-
