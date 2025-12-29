@@ -5,6 +5,7 @@ import '../controller/controller.dart';
 import '../model/model_class.dart';
 
 class EditableTextScreen extends StatelessWidget {
+
   EditableTextScreen({super.key});
 
   final controller = Get.put(EditableTextController());
@@ -267,15 +268,23 @@ class EditableTextScreen extends StatelessWidget {
                       ],
                     ),
 
-                    TextButton(
-                      onPressed: controller.lastDeletedItem == null
-                          ? null
-                          : controller.restoreLastDeleted,
-                      child: const Text(
-                        'Undo',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextButton(
+                          onPressed: controller.lastDeletedItem == null
+                              ? null
+                              : controller.restoreLastDeleted,
+                          child: const Text(
+                            'Undo',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
+
+                      ],
+                    )
+
+
                   ],
                 ),
               );

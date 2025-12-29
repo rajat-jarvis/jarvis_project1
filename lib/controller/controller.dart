@@ -54,4 +54,5 @@ class EditableTextController extends GetxController {
 
     print(textDetails);
   }
+
 }

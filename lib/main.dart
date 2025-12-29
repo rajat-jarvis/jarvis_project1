@@ -1,4 +1,5 @@
 import 'package:drag_project/view/home_page.dart';
+import 'package:drag_project/view/view_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      home: EditableTextScreen(),
+      home: ViewLayout(),
     );
   }
 }
