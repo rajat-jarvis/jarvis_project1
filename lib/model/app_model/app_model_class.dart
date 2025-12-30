@@ -9,6 +9,8 @@ class EditableTextModel {
   FontWeight fontWeight;
   FontStyle fontStyle;
   bool isSelected;
+  double rotation;
+  double initialRotation;
 
   EditableTextModel({
     required this.text,
@@ -18,7 +20,9 @@ class EditableTextModel {
     this.color = Colors.black,
     this.fontWeight = FontWeight.w400,
     this.isSelected = false,
-    this.fontStyle=FontStyle.normal
+    this.fontStyle=FontStyle.normal,
+    this.rotation=0.0,
+    this.initialRotation=0.0
   });
 
   Map<String,dynamic> toJson(){

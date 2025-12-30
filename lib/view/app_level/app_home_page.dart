@@ -81,91 +81,128 @@ class AppEditableTextScreen extends StatelessWidget {
                             ),
                           );
                         }),
+
                         Obx(() {
                           return Stack(
-                            children: List.generate(
-                              appController.texts.length,
-                              (index) {
-                                final item = appController.texts[index];
-                                return Positioned(
-                                  left: item.x,
-                                  top: item.y,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        appController.selectText(index),
-                                    onScaleStart: (details) {
-                                      if (item.isSelected) {
-                                        appController.startZoom(item, details);
-                                      }
-                                    },
-                                    onScaleUpdate: (details) {
-                                      if (!item.isSelected) return;
-                                      const double dragSpeed = 0.3;
-                                      item.x +=
-                                          details.focalPointDelta.dx *
-                                          dragSpeed;
-                                      item.y +=
-                                          details.focalPointDelta.dy *
-                                          dragSpeed;
-                                      appController.scaleText(
-                                        item,
-                                        details,
-                                        details.focalPointDelta,
-                                      );
-                                      appController.texts.refresh();
-                                    },
+                            children: List.generate(appController.texts.length, (
+                              index,
+                            ) {
+                              final item = appController.texts[index];
+                              return Positioned(
+                                left: item.x,
+                                top: item.y,
+                                child: GestureDetector(
+                                  onTap: () => appController.selectText(index),
+                                  onScaleStart: (details) {
+                                    if (item.isSelected) {
+                                      appController.startZoom(item, details);
+                                    }
+                                  },
+                                  onScaleUpdate: (details) {
+                                    if (!item.isSelected) return;
+                                    const double dragSpeed = 0.3;
+                                    item.x +=
+                                        details.focalPointDelta.dx * dragSpeed;
+                                    item.y +=
+                                        details.focalPointDelta.dy * dragSpeed;
+                                    item.rotation =
+                                        item.initialRotation + details.rotation;
+                                    appController.scaleText(
+                                      item,
+                                      details,
+                                      details.focalPointDelta,
+                                    );
+                                    appController.texts.refresh();
+                                  },
 
-                                    child: ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                        minWidth: 80,
-                                        minHeight: 80,
-                                      ),
-                                      child: Stack(
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(4),
-                                            decoration: item.isSelected
-                                                ? BoxDecoration(
-                                                    border: Border.all(
-                                                      color: Colors.blue,
-                                                      width: 1.5,
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minWidth: 80,
+                                      minHeight: 80,
+                                    ),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Positioned(
+                                          child: Transform.rotate(
+                                            angle: item.rotation,
+                                            child: Row(
+                                              children: [
+                                                if (item.isSelected)
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                      bottom: 40,
                                                     ),
-                                                  )
-                                                : null,
-                                            child: Text(
-                                              item.text,
-                                              style: TextStyle(
-                                                fontSize: item.fontSize,
-                                                color: item.color,
-                                                fontWeight: item.fontWeight,
-                                                fontStyle: item.fontStyle,
-                                              ),
+                                                    child: InkWell(
+                                                      onTap: () => appController
+                                                          .deleteSelectedText(),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            16,
+                                                          ),
+                                                      child: Icon(
+                                                        Icons.delete,
+                                                        size: 24,
+                                                        color: Colors.blue,
+                                                      ),
+                                                    ),
+                                                  ),
+
+                                                Container(
+                                                  padding: const EdgeInsets.all(
+                                                    4,
+                                                  ),
+                                                  decoration: item.isSelected
+                                                      ? BoxDecoration(
+                                                          border: Border.all(
+                                                            color: Colors.blue,
+                                                            width: 1.5,
+                                                          ),
+                                                        )
+                                                      : null,
+                                                  child: Text(
+                                                    item.text,
+                                                    style: TextStyle(
+                                                      fontSize: item.fontSize,
+                                                      color: item.color,
+                                                      fontWeight:
+                                                          item.fontWeight,
+                                                      fontStyle: item.fontStyle,
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                if (item.isSelected)
+                                                  Padding(
+                                                    padding: EdgeInsets.only(
+                                                      bottom: 40,
+                                                    ),
+                                                    child: InkWell(
+                                                      onTap: () => appController
+                                                          .showEditTextPopup(
+                                                            item,
+                                                          ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            16,
+                                                          ),
+                                                      child: const Icon(
+                                                        Icons.edit,
+                                                        size: 24,
+                                                        color: Colors.blue,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
                                             ),
                                           ),
-                                          if (item.isSelected)
-                                            Positioned(
-                                              top: -12,
-                                              right: -12,
-                                              child: InkWell(
-                                                onTap: () => appController
-                                                    .showEditTextPopup(item),
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                                child: const Icon(
-                                                  Icons.edit,
-                                                  size: 24,
-                                                  color: Colors.blue,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                              );
+                            }),
                           );
                         }),
                       ],
@@ -279,22 +316,20 @@ class AppEditableTextScreen extends StatelessWidget {
                     );
                   }),
 
-                  Obx(() {
-                    final hasSelection = appController.texts.any(
-                      (e) => e.isSelected,
-                    );
-
-                    // if (!hasSelection) return const SizedBox.shrink();
-
-                    return ElevatedButton.icon(
-                      onPressed: () => appController.deleteSelectedText(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      icon: const Icon(Icons.delete),
-                      label: const Text('Delete'),
-                    );
-                  }),
+                  // Obx(() {
+                  //   final hasSelection = appController.texts.any(
+                  //     (e) => e.isSelected,
+                  //   );
+                  //   // if (!hasSelection) return const SizedBox.shrink();
+                  //   return ElevatedButton.icon(
+                  //     onPressed: () => appController.deleteSelectedText(),
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.red,
+                  //     ),
+                  //     icon: const Icon(Icons.delete),
+                  //     label: const Text('Delete'),
+                  //   );
+                  // }),
                 ],
               ),
             ],

@@ -4,7 +4,8 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../model/app_model/app_model_class.dart';
 
-class AppController extends GetxController {
+class AppController extends GetxController
+{
   final Rx<File?> selectedImage = Rx<File?>(null);
   final ImagePicker _picker = ImagePicker();
 
@@ -13,6 +14,8 @@ class AppController extends GetxController {
   double _startFontSize = 0;
   Offset _startDragPosition = Offset.zero;
 
+  double rotation=0.0;
+  double initialRotation=0.0;
 
   Future<void> pickImage() async {
     final image = await _picker.pickImage(source: ImageSource.gallery);
@@ -112,7 +115,7 @@ class AppController extends GetxController {
           const SizedBox(height: 8),
           TextField(
             controller: colorCtrl,
-            decoration: const InputDecoration(labelText: 'Hex Color (e.g. FF0000)'),
+            decoration: const InputDecoration(labelText: 'Hex Color '),
           ),
 
           const SizedBox(height: 8),
@@ -248,6 +251,7 @@ class AppController extends GetxController {
 
   void startZoom(EditableTextModel item, ScaleStartDetails details) {
     _startFontSize = item.fontSize;
+    item.initialRotation=item.rotation;
   }
 
   void updateZoom(EditableTextModel item, ScaleUpdateDetails details) {
@@ -332,5 +336,7 @@ class AppController extends GetxController {
         return FontWeight.w400;
     }
   }
+
 }
+
 
