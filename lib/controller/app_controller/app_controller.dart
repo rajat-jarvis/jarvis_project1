@@ -4,8 +4,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../model/app_model/app_model_class.dart';
 
-class AppController extends GetxController
-{
+class AppController extends GetxController {
   final Rx<File?> selectedImage = Rx<File?>(null);
   final ImagePicker _picker = ImagePicker();
 
@@ -14,8 +13,8 @@ class AppController extends GetxController
   double _startFontSize = 0;
   Offset _startDragPosition = Offset.zero;
 
-  double rotation=0.0;
-  double initialRotation=0.0;
+  double rotation = 0.0;
+  double initialRotation = 0.0;
 
   Future<void> pickImage() async {
     final image = await _picker.pickImage(source: ImageSource.gallery);
@@ -51,20 +50,14 @@ class AppController extends GetxController
         title: const Text('Delete Text'),
         content: const Text('Are you sure you want to delete this text?'),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               texts.removeAt(index);
               texts.refresh();
               Get.back();
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -88,7 +81,6 @@ class AppController extends GetxController
     final TextEditingController colorCtrl = TextEditingController();
     String fontWeightStr = 'FontWeight.w400';
     FontStyle fontStyle = baseItem?.fontStyle ?? FontStyle.normal;
-
 
     titleCtrl.text = baseItem?.text ?? '';
     sizeCtrl.text = (baseItem?.fontSize ?? 18).toString();
@@ -147,12 +139,17 @@ class AppController extends GetxController
             children: [
               TextButton(
                 onPressed: () => Get.back(),
-                child: const Text('Cancel', style: TextStyle(color: Colors.black)),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
               const SizedBox(width: 12),
               ElevatedButton(
                 onPressed: () {
-                  final color = Color(int.parse('FF${colorCtrl.text}', radix: 16));
+                  final color = Color(
+                    int.parse('FF${colorCtrl.text}', radix: 16),
+                  );
                   final fontWeight = parseFontWeight(fontWeightStr);
                   final newModel = EditableTextModel(
                     text: titleCtrl.text.isEmpty ? 'New Text' : titleCtrl.text,
@@ -173,7 +170,10 @@ class AppController extends GetxController
 
                   Get.back();
                 },
-                child: const Text('Apply', style: TextStyle(color: Colors.black)),
+                child: const Text(
+                  'Apply',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
             ],
           ),
@@ -201,7 +201,10 @@ class AppController extends GetxController
             children: [
               TextButton(
                 onPressed: () => Get.back(),
-                child: const Text('Cancel', style: TextStyle(color: Colors.black)),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
               const SizedBox(width: 12),
               ElevatedButton(
@@ -209,12 +212,17 @@ class AppController extends GetxController
                   final index = texts.indexOf(item);
                   if (index != -1) {
                     // Update only the text string, keep other properties
-                    texts[index].text = editCtrl.text.isEmpty ? item.text : editCtrl.text;
+                    texts[index].text = editCtrl.text.isEmpty
+                        ? item.text
+                        : editCtrl.text;
                     texts.refresh();
                   }
                   Get.back();
                 },
-                child: const Text('Apply', style: TextStyle(color: Colors.black)),
+                child: const Text(
+                  'Apply',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
             ],
           ),
@@ -229,8 +237,7 @@ class AppController extends GetxController
   }
 
   void updateResize(EditableTextModel item, DragUpdateDetails details) {
-    final dy =
-        _startDragPosition.dy - details.globalPosition.dy;
+    final dy = _startDragPosition.dy - details.globalPosition.dy;
 
     final newSize = _startFontSize + (dy * 0.15);
 
@@ -238,8 +245,7 @@ class AppController extends GetxController
     texts.refresh();
   }
 
-  void endResize() {
-  }
+  void endResize() {}
 
   void submitText() {
     final List<Map<String, dynamic>> textDetails = texts
@@ -251,7 +257,7 @@ class AppController extends GetxController
 
   void startZoom(EditableTextModel item, ScaleStartDetails details) {
     _startFontSize = item.fontSize;
-    item.initialRotation=item.rotation;
+    item.initialRotation = item.rotation;
   }
 
   void updateZoom(EditableTextModel item, ScaleUpdateDetails details) {
@@ -260,7 +266,11 @@ class AppController extends GetxController
     texts.refresh();
   }
 
-  void scaleText(EditableTextModel item, ScaleUpdateDetails details, Offset delta) {
+  void scaleText(
+    EditableTextModel item,
+    ScaleUpdateDetails details,
+    Offset delta,
+  ) {
     item.x += delta.dx;
     item.y += delta.dy;
 
@@ -270,27 +280,22 @@ class AppController extends GetxController
   }
 
   void showDuplicateTextPopup() {
-    final selected =
-    texts.firstWhereOrNull((e) => e.isSelected);
+    final selected = texts.firstWhereOrNull((e) => e.isSelected);
     if (selected == null) return;
 
-    final TextEditingController textCtrl =
-    TextEditingController(text: selected.text);
+    final TextEditingController textCtrl = TextEditingController(
+      text: selected.text,
+    );
 
     Get.dialog(
       AlertDialog(
         title: const Text('Add Text'),
         content: TextField(
           controller: textCtrl,
-          decoration: const InputDecoration(
-            hintText: 'Enter text',
-          ),
+          decoration: const InputDecoration(hintText: 'Enter text'),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               for (final t in texts) {
@@ -336,7 +341,4 @@ class AppController extends GetxController
         return FontWeight.w400;
     }
   }
-
 }
-
-

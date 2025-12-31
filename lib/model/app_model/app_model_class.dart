@@ -20,20 +20,20 @@ class EditableTextModel {
     this.color = Colors.black,
     this.fontWeight = FontWeight.w400,
     this.isSelected = false,
-    this.fontStyle=FontStyle.normal,
-    this.rotation=0.0,
-    this.initialRotation=0.0
+    this.fontStyle = FontStyle.normal,
+    this.rotation = 0.0,
+    this.initialRotation = 0.0,
   });
 
-  Map<String,dynamic> toJson(){
+  Map<String, dynamic> toJson() {
     return {
-      "title":text,
-      "left":x,
-      "top":y,
-      "fontSize":fontSize,
-      "color":color,
-      "fontWeight":fontWeight,
-      "fontStyle":fontStyle
+      "title": text,
+      "left": x,
+      "top": y,
+      "fontSize": fontSize,
+      "color": color,
+      "fontWeight": fontWeight,
+      "fontStyle": fontStyle,
     };
   }
 }
@@ -48,12 +48,3 @@ extension FontWeightExtension on EditableTextModel {
     return 'FontWeight.w400';
   }
 }
-
-
-
-
-
-
-
-
-

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/controller.dart';
 import '../model/model_class.dart';
+import '../widget/web_widget/delete_button.dart';
+import '../widget/web_widget/undo_button.dart';
 
 class EditableTextScreen extends StatelessWidget {
 
@@ -146,13 +148,13 @@ class EditableTextScreen extends StatelessWidget {
                             },
                             child: Container(
                               decoration:
-                                  controller.selectedIndex.value == index
+                              controller.selectedIndex.value == index
                                   ? BoxDecoration(
-                                      border: Border.all(
-                                        color: Colors.blue,
-                                        width: 1.5,
-                                      ),
-                                    )
+                                border: Border.all(
+                                  color: Colors.blue,
+                                  width: 1.5,
+                                ),
+                              )
                                   : null,
                               child: Text(
                                 textItem.text,
@@ -241,18 +243,7 @@ class EditableTextScreen extends StatelessWidget {
 
                         Row(
                           children: [
-                            TextButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                              onPressed: index == null
-                                  ? null
-                                  : controller.deleteSelected,
-                              child: const Text(
-                                'Delete ',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
+                            DeleteButton(index: index, controller: controller),
                             SizedBox(width: 28),
                             TextButton(
                               onPressed: () {
@@ -271,20 +262,9 @@ class EditableTextScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextButton(
-                          onPressed: controller.lastDeletedItem == null
-                              ? null
-                              : controller.restoreLastDeleted,
-                          child: const Text(
-                            'Undo',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ),
-
+                        UndoButton(controller: controller),
                       ],
                     )
-
-
                   ],
                 ),
               );
