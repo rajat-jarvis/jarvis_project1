@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/app_controller/app_controller.dart';
@@ -17,7 +16,7 @@ class AppEditableTextScreen extends StatelessWidget {
     const imageAspectRatio = 1440 / 1024;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text(
           'Textedit Screen',
@@ -25,32 +24,10 @@ class AppEditableTextScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => appController.showTextPopup(),
-        child: const Icon(Icons.text_fields),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(12),
-        child: SizedBox(
-          height: 50,
-          child: ElevatedButton(
-            onPressed: () => appController.submitText(),
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
-              'Submit',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-      ),
-
       body: SingleChildScrollView(
         child: Column(
           children: [
+
             GestureDetector(
               onTap: () => appController.deselectAll(),
               child: Padding(
@@ -65,6 +42,7 @@ class AppEditableTextScreen extends StatelessWidget {
                         aspectRatio: imageAspectRatio,
                         child: LayoutBuilder(
                           builder: (context, constraints) {
+
                             final imageWidth = constraints.maxWidth;
                             final imageHeight = constraints.maxHeight;
 
@@ -109,8 +87,8 @@ class AppEditableTextScreen extends StatelessWidget {
                                         left: item.x,
                                         top: item.y,
                                         child: GestureDetector(
-                                          onTap: () =>
-                                              appController.selectText(index),
+                                          onTap: () => appController.selectText(index),
+
                                           onScaleStart: (details) {
                                             if (item.isSelected) {
                                               appController.startZoom(
@@ -119,17 +97,25 @@ class AppEditableTextScreen extends StatelessWidget {
                                               );
                                             }
                                           },
-                                          onScaleUpdate: (details){
+
+                                          onScaleUpdate: (details) {
                                             if (!item.isSelected) return;
                                             final dragSpeed = 0.3;
 
-                                            item.x += details.focalPointDelta.dx * dragSpeed;
-                                            item.y += details.focalPointDelta.dy * dragSpeed;
-                                            const double padding = 8 * 5;
+                                            item.x +=
+                                                details.focalPointDelta.dx *
+                                                dragSpeed;
+                                            item.y +=
+                                                details.focalPointDelta.dy *
+                                                dragSpeed;
 
+                                            const double padding = 5 * 4;
 
-                                            appController.scaleText(item, details, details.focalPointDelta);
-
+                                            appController.scaleText(
+                                              item,
+                                              details,
+                                              details.focalPointDelta,
+                                            );
 
                                             final textPainter = TextPainter(
                                               text: TextSpan(
@@ -143,21 +129,26 @@ class AppEditableTextScreen extends StatelessWidget {
                                               textDirection: TextDirection.ltr,
                                             )..layout();
 
-                                            final textWidth = textPainter.width + padding;
-                                            final textHeight = textPainter.height + padding;
+                                            final textWidth =
+                                                textPainter.width + padding;
+                                            final textHeight =
+                                                textPainter.height + padding;
 
+                                            item.x = item.x.clamp(
+                                              0.0,
+                                              imageWidth - textWidth,
+                                            );
+                                            item.y = item.y.clamp(
+                                              0.0,
+                                              imageHeight - textHeight,
+                                            );
 
-                                            item.x = item.x.clamp(0.0, imageWidth - textWidth);
-                                            item.y = item.y.clamp(0.0, imageHeight - textHeight);
-
-                                            item.rotation = item.initialRotation + details.rotation;
-
+                                            item.rotation =
+                                                item.initialRotation +
+                                                details.rotation;
 
                                             appController.texts.refresh();
-
                                           },
-
-
 
                                           child: ConstrainedBox(
                                             constraints: BoxConstraints(
@@ -182,6 +173,7 @@ class AppEditableTextScreen extends StatelessWidget {
                                                               onTap: () =>
                                                                   appController
                                                                       .deleteSelectedText(),
+
                                                               borderRadius:
                                                                   BorderRadius.circular(
                                                                     16,
@@ -189,27 +181,13 @@ class AppEditableTextScreen extends StatelessWidget {
                                                               child: Icon(
                                                                 Icons.delete,
                                                                 size: 24,
-                                                                color:
-                                                                    Colors.blue,
+                                                                color: Colors
+                                                                    .black,
                                                               ),
                                                             ),
                                                           ),
 
                                                         Container(
-                                                          padding:
-                                                              const EdgeInsets.all(
-                                                                4,
-                                                              ),
-                                                          decoration:
-                                                              item.isSelected
-                                                              ? BoxDecoration(
-                                                                  border: Border.all(
-                                                                    color: Colors
-                                                                        .blue,
-                                                                    width: 1.5,
-                                                                  ),
-                                                                )
-                                                              : null,
                                                           child: Text(
                                                             item.text,
                                                             style: TextStyle(
@@ -243,8 +221,8 @@ class AppEditableTextScreen extends StatelessWidget {
                                                               child: const Icon(
                                                                 Icons.edit,
                                                                 size: 24,
-                                                                color:
-                                                                    Colors.blue,
+                                                                color: Colors
+                                                                    .black,
                                                               ),
                                                             ),
                                                           ),
@@ -286,6 +264,24 @@ class AppEditableTextScreen extends StatelessWidget {
                                 appController: appController,
                               );
                             }),
+
+                            SizedBox(width: 80),
+
+                            Container(
+                              height: 40,
+                              width: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    appController.showTextPopup();
+                                  },
+                                  child: Icon(Icons.text_fields),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
 
@@ -308,7 +304,9 @@ class AppEditableTextScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
+
                               const SizedBox(height: 8),
+
                               Text(
                                 selectedIndex == -1
                                     ? 'Y:  - -'
@@ -327,10 +325,28 @@ class AppEditableTextScreen extends StatelessWidget {
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: 25),
+              child: SizedBox(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => appController.submitText(),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Submit',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
-

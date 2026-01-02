@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../controller/app_controller/app_controller.dart';
 
@@ -15,8 +14,13 @@ class AddTextButton extends StatelessWidget {
     return ElevatedButton.icon(
       onPressed: () =>
           appController.showDuplicateTextPopup(),
-      icon: const Icon(Icons.add),
-      label: const Text('Add Text'),
+      icon: const Icon(Icons.add,
+      color: Colors.black,),
+      label: const Text('Duplicate',
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Colors.black
+      ),),
     );
   }
 }
