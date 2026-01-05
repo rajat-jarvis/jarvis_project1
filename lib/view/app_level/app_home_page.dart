@@ -20,14 +20,13 @@ class AppEditableTextScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Textedit Screen',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold,),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             GestureDetector(
               onTap: () => appController.deselectAll(),
               child: Padding(
@@ -42,9 +41,19 @@ class AppEditableTextScreen extends StatelessWidget {
                         aspectRatio: imageAspectRatio,
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-
                             final imageWidth = constraints.maxWidth;
                             final imageHeight = constraints.maxHeight;
+
+                            appController.imageWidth = imageWidth;
+                            appController.imageHeight = imageHeight;
+
+                            for (var t in appController.texts) {
+                              if (t.relativeX != 0 || t.relativeY != 0 || t.relativeFontSize != 0) {
+                                t.updateAbsolute(imageWidth, imageHeight);
+                              } else {
+                                t.updateRelative(imageWidth, imageHeight);
+                              }
+                            }
 
                             return Stack(
                               alignment: Alignment.center,
@@ -56,6 +65,7 @@ class AppEditableTextScreen extends StatelessWidget {
                                   width: double.infinity,
                                   height: double.infinity,
                                 ),
+
                                 Obx(() {
                                   return GestureDetector(
                                     onTap: appController.pickImage,
@@ -63,13 +73,8 @@ class AppEditableTextScreen extends StatelessWidget {
                                       radius: 50,
                                       backgroundColor: Colors.grey,
                                       backgroundImage:
-                                          appController.selectedImage.value !=
-                                              null
-                                          ? FileImage(
-                                              appController
-                                                  .selectedImage
-                                                  .value!,
-                                            )
+                                      appController.selectedImage.value != null
+                                          ? FileImage(appController.selectedImage.value!)
                                           : null,
                                     ),
                                   );
@@ -77,112 +82,81 @@ class AppEditableTextScreen extends StatelessWidget {
 
                                 Obx(() {
                                   return Stack(
-                                    children: List.generate(appController.texts.length, (
-                                      index,
-                                    ) {
-                                      final item = appController.texts[index];
-                                      final key = GlobalKey();
+                                    children: List.generate(
+                                      appController.texts.length,
+                                          (index) {
+                                        final item = appController.texts[index];
+                                        final key = GlobalKey();
 
-                                      return Positioned(
-                                        left: item.x,
-                                        top: item.y,
-                                        child: GestureDetector(
-                                          onTap: () => appController.selectText(index),
+                                        return Positioned(
+                                          left: item.x,
+                                          top: item.y,
+                                          child: GestureDetector(
+                                            onTap: () => appController.selectText(index),
 
-                                          onScaleStart: (details) {
-                                            if (item.isSelected) {
-                                              appController.startZoom(
-                                                item,
-                                                details,
-                                              );
-                                            }
-                                          },
+                                            onScaleStart: (details) {
+                                              if (item.isSelected) {
+                                                appController.startZoom(item, details);
+                                              }
+                                            },
 
-                                          onScaleUpdate: (details) {
-                                            if (!item.isSelected) return;
-                                            final dragSpeed = 0.3;
+                                            onScaleUpdate: (details) {
+                                              if (!item.isSelected) return;
+                                              final dragSpeed = 0.3;
 
-                                            item.x +=
-                                                details.focalPointDelta.dx *
-                                                dragSpeed;
-                                            item.y +=
-                                                details.focalPointDelta.dy *
-                                                dragSpeed;
+                                              item.x += details.focalPointDelta.dx * dragSpeed;
+                                              item.y += details.focalPointDelta.dy * dragSpeed;
 
-                                            const double padding = 5 * 4;
+                                              appController.scaleText(item, details, details.focalPointDelta);
 
-                                            appController.scaleText(
-                                              item,
-                                              details,
-                                              details.focalPointDelta,
-                                            );
-
-                                            final textPainter = TextPainter(
-                                              text: TextSpan(
-                                                text: item.text,
-                                                style: TextStyle(
-                                                  fontSize: item.fontSize,
-                                                  fontWeight: item.fontWeight,
-                                                  fontStyle: item.fontStyle,
+                                              final textPainter = TextPainter(
+                                                text: TextSpan(
+                                                  text: item.text,
+                                                  style: TextStyle(
+                                                    fontSize: item.fontSize,
+                                                    fontWeight: item.fontWeight,
+                                                    fontStyle: item.fontStyle,
+                                                  ),
                                                 ),
+                                                textDirection: TextDirection.ltr,
+                                              )..layout();
+
+                                              const padding = 20.0;
+                                              item.x = item.x.clamp(0.0, imageWidth - textPainter.width - padding);
+                                              item.y = item.y.clamp(0.0, imageHeight - textPainter.height - padding);
+
+                                              // Rotate
+                                              item.rotation = item.initialRotation + details.rotation;
+
+                                              appController.texts.refresh();
+                                            },
+
+                                            onScaleEnd: (details) {
+                                              item.updateRelative(imageWidth, imageHeight);
+                                            },
+
+                                            child: ConstrainedBox(
+                                              constraints: const BoxConstraints(
+                                                minWidth: 80,
+                                                minHeight: 80,
                                               ),
-                                              textDirection: TextDirection.ltr,
-                                            )..layout();
-
-                                            final textWidth =
-                                                textPainter.width + padding;
-                                            final textHeight =
-                                                textPainter.height + padding;
-
-                                            item.x = item.x.clamp(
-                                              0.0,
-                                              imageWidth - textWidth,
-                                            );
-                                            item.y = item.y.clamp(
-                                              0.0,
-                                              imageHeight - textHeight,
-                                            );
-
-                                            item.rotation =
-                                                item.initialRotation +
-                                                details.rotation;
-
-                                            appController.texts.refresh();
-                                          },
-
-                                          child: ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              minWidth: 80,
-                                              minHeight: 80,
-                                            ),
-                                            child: Stack(
-                                              clipBehavior: Clip.none,
-                                              children: [
-                                                Positioned(
-                                                  child: Transform.rotate(
+                                              child: Stack(
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  Transform.rotate(
                                                     angle: item.rotation,
                                                     child: Row(
                                                       children: [
                                                         if (item.isSelected)
                                                           Padding(
-                                                            padding:
-                                                                EdgeInsets.only(
-                                                                  bottom: 40,
-                                                                ),
+                                                            padding: const EdgeInsets.only(bottom: 40),
                                                             child: InkWell(
-                                                              onTap: () =>
-                                                                  appController
-                                                                      .deleteSelectedText(),
-
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    16,
-                                                                  ),
-                                                              child: Icon(
+                                                              onTap: () => appController.deleteSelectedText(),
+                                                              borderRadius: BorderRadius.circular(16),
+                                                              child: const Icon(
                                                                 Icons.delete,
                                                                 size: 24,
-                                                                color: Colors
-                                                                    .black,
+                                                                color: Colors.black,
                                                               ),
                                                             ),
                                                           ),
@@ -191,51 +165,37 @@ class AppEditableTextScreen extends StatelessWidget {
                                                           child: Text(
                                                             item.text,
                                                             style: TextStyle(
-                                                              fontSize:
-                                                                  item.fontSize,
+                                                              fontSize: item.fontSize,
                                                               color: item.color,
-                                                              fontWeight: item
-                                                                  .fontWeight,
-                                                              fontStyle: item
-                                                                  .fontStyle,
+                                                              fontWeight: item.fontWeight,
+                                                              fontStyle: item.fontStyle,
                                                             ),
                                                           ),
                                                         ),
 
                                                         if (item.isSelected)
                                                           Padding(
-                                                            padding:
-                                                                EdgeInsets.only(
-                                                                  bottom: 40,
-                                                                ),
+                                                            padding: const EdgeInsets.only(bottom: 40),
                                                             child: InkWell(
-                                                              onTap: () =>
-                                                                  appController
-                                                                      .showEditTextPopup(
-                                                                        item,
-                                                                      ),
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    16,
-                                                                  ),
+                                                              onTap: () => appController.showEditTextPopup(item),
+                                                              borderRadius: BorderRadius.circular(16),
                                                               child: const Icon(
                                                                 Icons.edit,
                                                                 size: 24,
-                                                                color: Colors
-                                                                    .black,
+                                                                color: Colors.black,
                                                               ),
                                                             ),
                                                           ),
                                                       ],
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      );
-                                    }),
+                                        );
+                                      },
+                                    ),
                                   );
                                 }),
                               ],
@@ -253,20 +213,12 @@ class AppEditableTextScreen extends StatelessWidget {
                         Row(
                           children: [
                             ColorPickerButton(appController: appController),
-
-                            SizedBox(width: 10),
-
+                            const SizedBox(width: 10),
                             Obx(() {
-                              final hasSelection = appController.texts.any(
-                                (e) => e.isSelected,
-                              );
-                              return AddTextButton(
-                                appController: appController,
-                              );
+                              final hasSelection = appController.texts.any((e) => e.isSelected);
+                              return AddTextButton(appController: appController);
                             }),
-
-                            SizedBox(width: 80),
-
+                            const SizedBox(width: 80),
                             Container(
                               height: 40,
                               width: 80,
@@ -278,7 +230,7 @@ class AppEditableTextScreen extends StatelessWidget {
                                   onPressed: () {
                                     appController.showTextPopup();
                                   },
-                                  child: Icon(Icons.text_fields),
+                                  child: const Icon(Icons.text_fields),
                                 ),
                               ),
                             ),
@@ -288,9 +240,7 @@ class AppEditableTextScreen extends StatelessWidget {
                         const SizedBox(height: 10),
 
                         Obx(() {
-                          final selectedIndex = appController.texts.indexWhere(
-                            (e) => e.isSelected,
-                          );
+                          final selectedIndex = appController.texts.indexWhere((e) => e.isSelected);
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,9 +254,7 @@ class AppEditableTextScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-
                               const SizedBox(height: 8),
-
                               Text(
                                 selectedIndex == -1
                                     ? 'Y:  - -'
@@ -325,13 +273,17 @@ class AppEditableTextScreen extends StatelessWidget {
                 ),
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.only(top: 25),
               child: SizedBox(
                 height: 50,
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => appController.submitText(),
+                  onPressed: () => appController.submitText(
+                    appController.imageWidth,
+                    appController.imageHeight,
+                  ),
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

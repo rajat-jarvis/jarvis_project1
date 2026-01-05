@@ -16,6 +16,9 @@ class AppController extends GetxController {
   double rotation = 0.0;
   double initialRotation = 0.0;
 
+  double imageWidth = 0;
+  double imageHeight = 0;
+
   Future<void> pickImage() async {
     final image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) selectedImage.value = File(image.path);
@@ -247,13 +250,14 @@ class AppController extends GetxController {
 
   void endResize() {}
 
-  void submitText() {
+  void submitText(double imageWidth, double imageHeight) {
     final List<Map<String, dynamic>> textDetails = texts
-        .map((item) => item.toJson())
+        .map((item) => item.toJson(imageWidth, imageHeight))
         .toList();
 
     print(textDetails);
   }
+
 
   void startZoom(EditableTextModel item, ScaleStartDetails details) {
     _startFontSize = item.fontSize;

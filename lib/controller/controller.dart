@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../model/model_class.dart';
 
@@ -7,53 +8,78 @@ class EditableTextController extends GetxController {
   EditableTextItem? lastDeletedItem;
   int? lastDeletedIndex;
 
-  void select(int index) {
-    selectedIndex.value = index;
-  }
+  void select(int index) => selectedIndex.value = index;
+  void deselect() => selectedIndex.value = null;
 
-  void deselect() {
-    selectedIndex.value = null;
-  }
+  void addText(EditableTextItem item, double imageWidth, double imageHeight) {
 
-  void addText(EditableTextItem item) {
+    item.updateRelative(imageWidth, imageHeight);
     texts.add(item);
     selectedIndex.value = texts.length - 1;
   }
 
-  void updatePosition(int index, double x, double y) {
-    texts[index].x = x;
-    texts[index].y = y;
+  void updatePosition(
+      int index,
+      double x,
+      double y,
+      double imageWidth,
+      double imageHeight,
+      ) {
+    final item = texts[index];
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: item.text,
+        style: TextStyle(
+          fontSize: item.fontSize,
+          fontWeight: FontWeight.values.firstWhere(
+                (e) => e.toString() == item.fontWeight,
+            orElse: () => FontWeight.w400,
+          ),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final textWidth = textPainter.width;
+    final textHeight = textPainter.height;
+
+    final clampedX = x.clamp(0.0, imageWidth - textWidth);
+    final clampedY = y.clamp(0.0, imageHeight - textHeight);
+
+    item.x = clampedX;
+    item.y = clampedY;
+
+    item.updateRelative(imageWidth, imageHeight);
     texts.refresh();
   }
 
   void deleteSelected() {
     if (selectedIndex.value == null) return;
-
     lastDeletedIndex = selectedIndex.value;
     lastDeletedItem = texts[lastDeletedIndex!];
-
     texts.removeAt(lastDeletedIndex!);
     selectedIndex.value = null;
   }
 
   void restoreLastDeleted() {
     if (lastDeletedItem == null || lastDeletedIndex == null) return;
-
     texts.insert(lastDeletedIndex!, lastDeletedItem!);
-
     selectedIndex.value = lastDeletedIndex;
-
     lastDeletedItem = null;
     lastDeletedIndex = null;
   }
 
   void submitText() {
-    final List<Map<String, dynamic>> textDetails = texts
-        .map((item) => item.toJson())
-        .toList();
-
+    final List<Map<String, dynamic>> textDetails = texts.map((item) => item.toJson()).toList();
     print(textDetails);
   }
 
-
+  void onScreenResize(double imageWidth, double imageHeight) {
+    for (var t in texts) {
+      t.updateAbsolute(imageWidth, imageHeight);
+    }
+    texts.refresh();
+  }
 }
+

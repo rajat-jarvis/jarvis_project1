@@ -1,13 +1,9 @@
-import 'package:drag_project/view/style_util.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/controller.dart';
 import '../model/model_class.dart';
-import '../widget/web_widget/delete_button.dart';
-import '../widget/web_widget/undo_button.dart';
 
 class EditableTextScreen extends StatelessWidget {
-
   EditableTextScreen({super.key});
 
   final controller = Get.put(EditableTextController());
@@ -17,7 +13,11 @@ class EditableTextScreen extends StatelessWidget {
   final colorCtrl = TextEditingController();
   String fontWeight = 'FontWeight.w400';
 
-  void showTextPopup({EditableTextItem? baseItem}) {
+  void showTextPopup({
+    EditableTextItem? baseItem,
+    required double imageWidth,
+    required double imageHeight,
+  }) {
     titleCtrl.clear();
     sizeCtrl.text = (baseItem?.fontSize ?? 18).toString();
     colorCtrl.text = baseItem?.colorHex ?? '000000';
@@ -41,9 +41,7 @@ class EditableTextScreen extends StatelessWidget {
             controller: colorCtrl,
             decoration: const InputDecoration(labelText: 'Hex Color'),
           ),
-
           const SizedBox(height: 10),
-
           DropdownButtonFormField<String>(
             value: fontWeight,
             items: const [
@@ -55,16 +53,12 @@ class EditableTextScreen extends StatelessWidget {
             ],
             onChanged: (v) => fontWeight = v!,
           ),
-
           const SizedBox(height: 20),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
-                onPressed: () {
-                  Get.back();
-                },
+                onPressed: () => Get.back(),
                 child: const Text(
                   'Cancel',
                   style: TextStyle(color: Colors.black),
@@ -87,6 +81,8 @@ class EditableTextScreen extends StatelessWidget {
                       colorHex: colorCtrl.text,
                       fontWeight: fontWeight,
                     ),
+                    imageWidth,
+                    imageHeight,
                   );
                   Get.back();
                 },
@@ -106,20 +102,18 @@ class EditableTextScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageWidth = MediaQuery.of(context).size.width * 0.9;
     final imageHeight = imageWidth * (1024 / 1440);
+
+    controller.onScreenResize(imageWidth, imageHeight);
     return Scaffold(
-      appBar: AppBar(title: const Text('Text Edit Screen'), centerTitle: true),
+      appBar: AppBar(title: const Text('TextEdit Screen'), centerTitle: true),
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             const SizedBox(height: 20),
-
             Obx(() {
               return GestureDetector(
                 behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  controller.deselect();
-                },
+                onTap: controller.deselect,
                 child: SizedBox(
                   width: imageWidth,
                   height: imageHeight,
@@ -139,29 +133,34 @@ class EditableTextScreen extends StatelessWidget {
                           top: textItem.y,
                           child: GestureDetector(
                             onTap: () => controller.select(index),
-                            onPanUpdate: (d) {
-                              controller.updatePosition(
-                                index,
-                                textItem.x + d.delta.dx,
-                                textItem.y + d.delta.dy,
-                              );
-                            },
+                            onPanUpdate: (d) => controller.updatePosition(
+                              index,
+                              textItem.x + d.delta.dx,
+                              textItem.y + d.delta.dy,
+                              imageWidth,
+                              imageHeight,
+                            ),
                             child: Container(
                               decoration:
-                              controller.selectedIndex.value == index
+                                  controller.selectedIndex.value == index
                                   ? BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.blue,
-                                  width: 1.5,
-                                ),
-                              )
+                                      border: Border.all(
+                                        color: Colors.blue,
+                                        width: 1.5,
+                                      ),
+                                    )
                                   : null,
                               child: Text(
                                 textItem.text,
                                 style: TextStyle(
                                   fontSize: textItem.fontSize,
-                                  color: hexToColor(textItem.colorHex),
-                                  fontWeight: parseWeight(textItem.fontWeight),
+                                  color: Color(
+                                    int.parse('0xFF${textItem.colorHex}'),
+                                  ),
+                                  fontWeight: FontWeight.values.firstWhere(
+                                    (e) => e.toString() == textItem.fontWeight,
+                                    orElse: () => FontWeight.w400,
+                                  ),
                                 ),
                               ),
                             ),
@@ -179,9 +178,8 @@ class EditableTextScreen extends StatelessWidget {
             Obx(() {
               final index = controller.selectedIndex.value;
               return Padding(
-                padding: EdgeInsetsGeometry.symmetric(horizontal: 60),
+                padding: const EdgeInsets.symmetric(horizontal: 60),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
@@ -191,87 +189,61 @@ class EditableTextScreen extends StatelessWidget {
                           index == null
                               ? 'X: - -'
                               : 'X: ${controller.texts[index].x.toStringAsFixed(1)}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
                         ),
-                        const SizedBox(height: 8),
                         Text(
                           index == null
                               ? 'Y: - -'
                               : 'Y: ${controller.texts[index].y.toStringAsFixed(1)}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () => showTextPopup(
+                            imageWidth: imageWidth,
+                            imageHeight: imageHeight,
                           ),
+                          child: const Text('Create Text'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            final i = controller.selectedIndex.value;
+                            if (i != null) {
+                              showTextPopup(
+                                baseItem: controller.texts[i],
+                                imageWidth: imageWidth,
+                                imageHeight: imageHeight,
+                              );
+                            } else {
+                              showTextPopup(
+                                imageWidth: imageWidth,
+                                imageHeight: imageHeight,
+                              );
+                            }
+                          },
+                          child: const Text('Add Text'),
+                        ),
+                        TextButton(
+                          onPressed: controller.deleteSelected,
+                          child: const Text('Delete'),
+                        ),
+                        TextButton(
+                          onPressed: controller.restoreLastDeleted,
+                          child: const Text('Undo'),
+                        ),
+                        TextButton(
+                          onPressed: controller.submitText,
+                          child: const Text('Submit'),
                         ),
                       ],
                     ),
-
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            TextButton(
-                              onPressed: () => showTextPopup(),
-                              child: const Text(
-                                'Create Text',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextButton(
-                              onPressed: () {
-                                final i = controller.selectedIndex.value;
-                                if (i != null) {
-                                  showTextPopup(baseItem: controller.texts[i]);
-                                } else {
-                                  showTextPopup();
-                                }
-                              },
-                              child: const Text(
-                                'Add Text',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                        ),
-
-                        Row(
-                          children: [
-                            DeleteButton(index: index, controller: controller),
-                            SizedBox(width: 28),
-                            TextButton(
-                              onPressed: () {
-                                controller.submitText();
-                              },
-                              child: Text(
-                                "Submit",
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        UndoButton(controller: controller),
-                      ],
-                    )
                   ],
                 ),
               );
             }),
 
             const SizedBox(height: 30),
-
           ],
         ),
       ),
