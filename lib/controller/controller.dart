@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import '../model/dto_class/editable_text_mapper.dart';
 import '../model/model_class.dart';
 
 class EditableTextController extends GetxController {
@@ -7,6 +8,7 @@ class EditableTextController extends GetxController {
   var selectedIndex = RxnInt();
   EditableTextItem? lastDeletedItem;
   int? lastDeletedIndex;
+  final List<Map<String,dynamic>> payload = [];
 
   void select(int index) => selectedIndex.value = index;
   void deselect() => selectedIndex.value = null;
@@ -70,10 +72,20 @@ class EditableTextController extends GetxController {
     lastDeletedIndex = null;
   }
 
-  void submitText() {
-    final List<Map<String, dynamic>> textDetails = texts.map((item) => item.toJson()).toList();
-    print(textDetails);
+  void submitText(double imageWidth) {
+    //final List<Map<String, dynamic>> payload = [];
+
+    for (final item in texts) {
+      final dto = item.toDTO(imageWidth);
+      payload.add(dto.toJson());
+    }
+    print(payload);
   }
+
+  // void submitText() {
+  //   final List<Map<String, dynamic>> textDetails = texts.map((item) => item.toJson()).toList();
+  //   print(textDetails);
+  // }
 
   void onScreenResize(double imageWidth, double imageHeight) {
     for (var t in texts) {

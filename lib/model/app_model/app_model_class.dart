@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 class EditableTextModel {
+  final String id;
   String text;
   double x;
   double y;
   double fontSize;
   double relativeX;
   double relativeY;
-  double relativeFontSize;
+  //double relativeFontSize;
   Color color;
   FontWeight fontWeight;
   FontStyle fontStyle;
@@ -22,26 +23,30 @@ class EditableTextModel {
     this.fontSize = 18.0,
     this.relativeX=0,
     this.relativeY=0,
-    this.relativeFontSize=0,
+    //this.relativeFontSize=0,
     this.color = Colors.black,
     this.fontWeight = FontWeight.w400,
     this.isSelected = false,
     this.fontStyle = FontStyle.normal,
     this.rotation = 0.0,
     this.initialRotation = 0.0,
-  });
+    String? id,
+  }): id = id ?? UniqueKey().toString();
 
   void updateRelative(double imageWidth, double imageHeight) {
     relativeX = x / imageWidth;
     relativeY = y / imageHeight;
-    relativeFontSize = fontSize / imageWidth;
+   // relativeFontSize = fontSize / imageWidth;
   }
 
   void updateAbsolute(double imageWidth, double imageHeight) {
     x = relativeX * imageWidth;
     y = relativeY * imageHeight;
-    fontSize = relativeFontSize * imageWidth;
+    //fontSize = relativeFontSize * imageWidth;
   }
+
+
+
 
 
   Map<String, dynamic> toJson(double imageWidth,double imageHeight) {

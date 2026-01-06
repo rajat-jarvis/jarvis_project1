@@ -24,7 +24,7 @@ class MovableTextContainer extends StatelessWidget {
 
     final x = textItem.relativeX * imageWidth;
     final y = textItem.relativeY * imageHeight;
-    final fontSize = textItem.relativeFontSize * imageWidth;
+   // final fontSize = textItem.relativeFontSize * imageWidth;
 
     return Positioned(
       left: x,
@@ -52,7 +52,6 @@ class MovableTextContainer extends StatelessWidget {
           child: Text(
             textItem.text,
             style: TextStyle(
-              fontSize: fontSize,
               color: hexToColor(textItem.colorHex),
               fontWeight: parseWeight(textItem.fontWeight),
             ),

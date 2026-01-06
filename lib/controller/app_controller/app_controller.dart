@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../model/app_model/app_model_class.dart';
+import '../../model/dto_class/editable_text_dto.dart';
+import '../../model/dto_class/mobile_dto_mapper.dart';
 
 class AppController extends GetxController {
   final Rx<File?> selectedImage = Rx<File?>(null);
@@ -19,9 +21,16 @@ class AppController extends GetxController {
   double imageWidth = 0;
   double imageHeight = 0;
 
+  bool hasLoadedWebJson = false;
+
   Future<void> pickImage() async {
     final image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) selectedImage.value = File(image.path);
+  }
+
+  void selectTextById(String id) {
+    for (var t in texts) t.isSelected = t.id == id;
+    texts.refresh();
   }
 
   void addTextModel(EditableTextModel model) => texts.add(model);
@@ -214,7 +223,6 @@ class AppController extends GetxController {
                 onPressed: () {
                   final index = texts.indexOf(item);
                   if (index != -1) {
-                    // Update only the text string, keep other properties
                     texts[index].text = editCtrl.text.isEmpty
                         ? item.text
                         : editCtrl.text;
@@ -257,7 +265,6 @@ class AppController extends GetxController {
 
     print(textDetails);
   }
-
 
   void startZoom(EditableTextModel item, ScaleStartDetails details) {
     _startFontSize = item.fontSize;
@@ -345,4 +352,57 @@ class AppController extends GetxController {
         return FontWeight.w400;
     }
   }
+
+  void loadWebTextJson(List<Map<String, dynamic>> webJson) {
+    if (imageWidth == 0 || imageHeight == 0) return;
+
+    // texts.clear();
+
+    for (var map in webJson) {
+      final dto = EditableTextDTO.fromJson(map);
+
+      final item = dto.toMobileModel(imageWidth, imageHeight);
+      texts.add(item);
+    }
+
+    texts.refresh();
+  }
+
+  // void loadWebTextJson(List<Map<String, dynamic>> webJson) {
+  //   if (imageWidth == 0 || imageHeight == 0) return;
+  //
+  //   for (var map in webJson) {
+  //     final dto = EditableTextDTO.fromJson(map);
+  //
+  //     final item = EditableTextModel(
+  //       text: dto.text,
+  //       x: dto.xPercent * imageWidth,
+  //       y: dto.yPercent * imageHeight,
+  //       fontSize: dto.fontSizePercent * imageWidth,
+  //       color: Color(int.parse('FF${dto.color}', radix: 16)),
+  //       fontWeight: parseFontWeight(dto.fontWeight),
+  //       relativeX: dto.xPercent,
+  //       relativeY: dto.yPercent,
+  //       isSelected: false,
+  //     );
+  //
+  //     texts.add(item);
+  //   }
+  //
+  //   texts.refresh();
+  // }
+
+
+
+  void onCanvasResize(double w, double h) {
+    imageWidth = w;
+    imageHeight = h;
+
+    for (final t in texts) {
+      t.updateAbsolute(w, h);
+    }
+
+    texts.refresh();
+  }
+
 }

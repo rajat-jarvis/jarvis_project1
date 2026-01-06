@@ -6,7 +6,7 @@ class EditableTextItem {
 
   double relativeX;
   double relativeY;
-  double relativeFontSize;
+ // double relativeFontSize;
 
   String colorHex;
   String fontWeight;
@@ -18,23 +18,21 @@ class EditableTextItem {
     this.fontSize = 18,
     this.relativeX = 0,
     this.relativeY = 0,
-    this.relativeFontSize = 0,
+    //this.relativeFontSize = 0,
     this.colorHex = '000000',
     this.fontWeight = 'FontWeight.w400',
   });
 
-
   void updateRelative(double imageWidth, double imageHeight) {
     relativeX = x / imageWidth;
     relativeY = y / imageHeight;
-    relativeFontSize = fontSize / imageWidth;
+    //relativeFontSize = fontSize / imageWidth;
   }
-
 
   void updateAbsolute(double imageWidth, double imageHeight) {
     x = relativeX * imageWidth;
     y = relativeY * imageHeight;
-    fontSize = relativeFontSize * imageWidth;
+   //fontSize = relativeFontSize * imageWidth;
   }
 
   Map<String, dynamic> toJson() {
@@ -61,7 +59,7 @@ class EditableTextItem {
       fontWeight: json['fontWeight'],
       relativeX: (json['relativeX'] ?? 0).toDouble(),
       relativeY: (json['relativeY'] ?? 0).toDouble(),
-      relativeFontSize: (json['relativeFontSize'] ?? 0).toDouble(),
+      //relativeFontSize: (json['relativeFontSize'] ?? 0).toDouble(),
     );
   }
 }

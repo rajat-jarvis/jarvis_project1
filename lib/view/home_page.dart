@@ -110,6 +110,7 @@ class EditableTextScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 20),
+
             Obx(() {
               return GestureDetector(
                 behavior: HitTestBehavior.translucent,
@@ -233,7 +234,7 @@ class EditableTextScreen extends StatelessWidget {
                           child: const Text('Undo'),
                         ),
                         TextButton(
-                          onPressed: controller.submitText,
+                          onPressed:()=> controller.submitText(imageWidth),
                           child: const Text('Submit'),
                         ),
                       ],
