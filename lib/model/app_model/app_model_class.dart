@@ -8,7 +8,7 @@ class EditableTextModel {
   double fontSize;
   double relativeX;
   double relativeY;
-  //double relativeFontSize;
+  double relativeFontSize;
   Color color;
   FontWeight fontWeight;
   FontStyle fontStyle;
@@ -21,9 +21,9 @@ class EditableTextModel {
     required this.x,
     required this.y,
     this.fontSize = 18.0,
-    this.relativeX=0,
-    this.relativeY=0,
-    //this.relativeFontSize=0,
+    this.relativeX = 0,
+    this.relativeY = 0,
+    this.relativeFontSize = 0,
     this.color = Colors.black,
     this.fontWeight = FontWeight.w400,
     this.isSelected = false,
@@ -31,37 +31,32 @@ class EditableTextModel {
     this.rotation = 0.0,
     this.initialRotation = 0.0,
     String? id,
-  }): id = id ?? UniqueKey().toString();
+  }) : id = id ?? UniqueKey().toString();
 
-  void updateRelative(double imageWidth, double imageHeight) {
-    relativeX = x / imageWidth;
-    relativeY = y / imageHeight;
-   // relativeFontSize = fontSize / imageWidth;
+  void updateRelative(double webWidth, double webHeight) {
+    relativeX = x / webWidth;
+    relativeY = y / webHeight;
+    relativeFontSize = fontSize / webWidth;
   }
 
-  void updateAbsolute(double imageWidth, double imageHeight) {
-    x = relativeX * imageWidth;
-    y = relativeY * imageHeight;
-    //fontSize = relativeFontSize * imageWidth;
+  void updateAbsolute(double deviceWidth, double deviceHeight) {
+    x = relativeX * deviceWidth;
+    y = relativeY * deviceHeight;
+    fontSize = relativeFontSize * deviceWidth;
   }
 
-
-
-
-
-  Map<String, dynamic> toJson(double imageWidth,double imageHeight) {
+  Map<String, dynamic> toJson(double deviceWidth, double deviceHeight) {
     return {
       "title": text,
-      "left": x/imageWidth,
-      "top": y/imageHeight,
-      "fontSize": fontSize/imageWidth,
+      "left": x / deviceWidth,
+      "top": y / deviceHeight,
+      "fontSize": fontSize / deviceWidth,
       "color": color.value,
       "fontWeight": fontWeightStr,
       "fontStyle": fontStyle.toString(),
     };
   }
 }
-
 
 extension FontWeightExtension on EditableTextModel {
   String get fontWeightStr {

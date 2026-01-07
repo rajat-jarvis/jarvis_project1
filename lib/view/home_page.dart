@@ -234,7 +234,7 @@ class EditableTextScreen extends StatelessWidget {
                           child: const Text('Undo'),
                         ),
                         TextButton(
-                          onPressed:()=> controller.submitText(imageWidth),
+                          onPressed: () => controller.submitText(imageWidth),
                           child: const Text('Submit'),
                         ),
                       ],

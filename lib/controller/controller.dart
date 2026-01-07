@@ -4,17 +4,22 @@ import '../model/dto_class/editable_text_mapper.dart';
 import '../model/model_class.dart';
 
 class EditableTextController extends GetxController {
-  var texts = <EditableTextItem>[].obs;
-  var selectedIndex = RxnInt();
+  final texts = <EditableTextItem>[].obs;
+  final selectedIndex = RxnInt();
+
   EditableTextItem? lastDeletedItem;
   int? lastDeletedIndex;
-  final List<Map<String,dynamic>> payload = [];
+
+  final List<Map<String, dynamic>> payload = [];
 
   void select(int index) => selectedIndex.value = index;
   void deselect() => selectedIndex.value = null;
 
-  void addText(EditableTextItem item, double imageWidth, double imageHeight) {
-
+  void addText(
+      EditableTextItem item,
+      double imageWidth,
+      double imageHeight,
+      ) {
     item.updateRelative(imageWidth, imageHeight);
     texts.add(item);
     selectedIndex.value = texts.length - 1;
@@ -43,14 +48,8 @@ class EditableTextController extends GetxController {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    final textWidth = textPainter.width;
-    final textHeight = textPainter.height;
-
-    final clampedX = x.clamp(0.0, imageWidth - textWidth);
-    final clampedY = y.clamp(0.0, imageHeight - textHeight);
-
-    item.x = clampedX;
-    item.y = clampedY;
+    item.x = x.clamp(0, imageWidth - textPainter.width);
+    item.y = y.clamp(0, imageHeight - textPainter.height);
 
     item.updateRelative(imageWidth, imageHeight);
     texts.refresh();
@@ -71,27 +70,24 @@ class EditableTextController extends GetxController {
     lastDeletedItem = null;
     lastDeletedIndex = null;
   }
-
   void submitText(double imageWidth) {
-    //final List<Map<String, dynamic>> payload = [];
-
+    payload.clear();
     for (final item in texts) {
-      final dto = item.toDTO(imageWidth);
-      payload.add(dto.toJson());
+      payload.add(item.toDTO(imageWidth).toJson());
     }
-    print(payload);
+   // print(payload);
+
+    final List<Map<String, dynamic>> textDetails = texts.map((item) => item.toJson()).toList();
+    print(textDetails);
   }
 
-  // void submitText() {
-  //   final List<Map<String, dynamic>> textDetails = texts.map((item) => item.toJson()).toList();
-  //   print(textDetails);
-  // }
-
   void onScreenResize(double imageWidth, double imageHeight) {
-    for (var t in texts) {
+    for (final t in texts) {
       t.updateAbsolute(imageWidth, imageHeight);
     }
     texts.refresh();
   }
 }
+
+
 

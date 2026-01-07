@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../model/app_model/app_model_class.dart';
 import '../../model/dto_class/editable_text_dto.dart';
-import '../../model/dto_class/mobile_dto_mapper.dart';
 
 class AppController extends GetxController {
   final Rx<File?> selectedImage = Rx<File?>(null);
@@ -15,9 +14,6 @@ class AppController extends GetxController {
   double _startFontSize = 0;
   Offset _startDragPosition = Offset.zero;
 
-  double rotation = 0.0;
-  double initialRotation = 0.0;
-
   double imageWidth = 0;
   double imageHeight = 0;
 
@@ -26,19 +22,6 @@ class AppController extends GetxController {
   Future<void> pickImage() async {
     final image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) selectedImage.value = File(image.path);
-  }
-
-  void selectTextById(String id) {
-    for (var t in texts) t.isSelected = t.id == id;
-    texts.refresh();
-  }
-
-  void addTextModel(EditableTextModel model) => texts.add(model);
-
-  void updateTextPosition(int index, double dx, double dy) {
-    texts[index].x += dx;
-    texts[index].y += dy;
-    texts.refresh();
   }
 
   void selectText(int index) {
@@ -52,6 +35,8 @@ class AppController extends GetxController {
     for (var t in texts) t.isSelected = false;
     texts.refresh();
   }
+
+  void addTextModel(EditableTextModel model) => texts.add(model);
 
   void deleteSelectedText() {
     final index = texts.indexWhere((e) => e.isSelected);
@@ -76,14 +61,39 @@ class AppController extends GetxController {
     );
   }
 
-  void resizeText(int index, double delta) {
-    texts[index].fontSize += delta;
-    if (texts[index].fontSize < 8) texts[index].fontSize = 8;
+  void editTextValue(int index, EditableTextModel model) {
+    texts[index] = model;
     texts.refresh();
   }
 
-  void editTextValue(int index, EditableTextModel model) {
-    texts[index] = model;
+  void startResize(EditableTextModel item, DragStartDetails details) {
+    _startFontSize = item.fontSize;
+    _startDragPosition = details.globalPosition;
+  }
+
+  void updateResize(EditableTextModel item, DragUpdateDetails details) {
+    final dy = _startDragPosition.dy - details.globalPosition.dy;
+    final newSize = _startFontSize + (dy * 0.15);
+    item.fontSize = newSize.clamp(10.0, 120.0);
+    texts.refresh();
+  }
+
+  void startZoom(EditableTextModel item, ScaleStartDetails details) {
+    _startFontSize = item.fontSize;
+    item.initialRotation = item.rotation;
+  }
+
+  void scaleText(
+      EditableTextModel item,
+      ScaleUpdateDetails details,
+      Offset delta,
+      ) {
+    item.x += delta.dx;
+    item.y += delta.dy;
+    item.fontSize = (_startFontSize * details.scale).clamp(10.0, 120.0);
+    item.rotation = item.initialRotation + details.rotation;
+    item.updateRelative(imageWidth, imageHeight);
+
     texts.refresh();
   }
 
@@ -121,7 +131,6 @@ class AppController extends GetxController {
             controller: colorCtrl,
             decoration: const InputDecoration(labelText: 'Hex Color '),
           ),
-
           const SizedBox(height: 8),
           DropdownButtonFormField<FontStyle>(
             value: fontStyle,
@@ -151,10 +160,7 @@ class AppController extends GetxController {
             children: [
               TextButton(
                 onPressed: () => Get.back(),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Colors.black),
-                ),
+                child: const Text('Cancel', style: TextStyle(color: Colors.black)),
               ),
               const SizedBox(width: 12),
               ElevatedButton(
@@ -173,6 +179,8 @@ class AppController extends GetxController {
                     fontStyle: fontStyle,
                   );
 
+                  newModel.updateRelative(imageWidth, imageHeight);
+
                   if (baseItem == null) {
                     addTextModel(newModel);
                   } else {
@@ -182,10 +190,7 @@ class AppController extends GetxController {
 
                   Get.back();
                 },
-                child: const Text(
-                  'Apply',
-                  style: TextStyle(color: Colors.black),
-                ),
+                child: const Text('Apply', style: TextStyle(color: Colors.black)),
               ),
             ],
           ),
@@ -213,27 +218,20 @@ class AppController extends GetxController {
             children: [
               TextButton(
                 onPressed: () => Get.back(),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Colors.black),
-                ),
+                child: const Text('Cancel', style: TextStyle(color: Colors.black)),
               ),
               const SizedBox(width: 12),
               ElevatedButton(
                 onPressed: () {
                   final index = texts.indexOf(item);
                   if (index != -1) {
-                    texts[index].text = editCtrl.text.isEmpty
-                        ? item.text
-                        : editCtrl.text;
+                    texts[index].text = editCtrl.text.isEmpty ? item.text : editCtrl.text;
+                    texts[index].updateRelative(imageWidth, imageHeight);
                     texts.refresh();
                   }
                   Get.back();
                 },
-                child: const Text(
-                  'Apply',
-                  style: TextStyle(color: Colors.black),
-                ),
+                child: const Text('Apply', style: TextStyle(color: Colors.black)),
               ),
             ],
           ),
@@ -242,61 +240,11 @@ class AppController extends GetxController {
     );
   }
 
-  void startResize(EditableTextModel item, DragStartDetails details) {
-    _startFontSize = item.fontSize;
-    _startDragPosition = details.globalPosition;
-  }
-
-  void updateResize(EditableTextModel item, DragUpdateDetails details) {
-    final dy = _startDragPosition.dy - details.globalPosition.dy;
-
-    final newSize = _startFontSize + (dy * 0.15);
-
-    item.fontSize = newSize.clamp(10.0, 120.0);
-    texts.refresh();
-  }
-
-  void endResize() {}
-
-  void submitText(double imageWidth, double imageHeight) {
-    final List<Map<String, dynamic>> textDetails = texts
-        .map((item) => item.toJson(imageWidth, imageHeight))
-        .toList();
-
-    print(textDetails);
-  }
-
-  void startZoom(EditableTextModel item, ScaleStartDetails details) {
-    _startFontSize = item.fontSize;
-    item.initialRotation = item.rotation;
-  }
-
-  void updateZoom(EditableTextModel item, ScaleUpdateDetails details) {
-    final newSize = (_startFontSize * details.scale).clamp(10.0, 120.0);
-    item.fontSize = newSize;
-    texts.refresh();
-  }
-
-  void scaleText(
-    EditableTextModel item,
-    ScaleUpdateDetails details,
-    Offset delta,
-  ) {
-    item.x += delta.dx;
-    item.y += delta.dy;
-
-    item.fontSize = (_startFontSize * details.scale).clamp(10.0, 120.0);
-
-    texts.refresh();
-  }
-
   void showDuplicateTextPopup() {
     final selected = texts.firstWhereOrNull((e) => e.isSelected);
     if (selected == null) return;
 
-    final TextEditingController textCtrl = TextEditingController(
-      text: selected.text,
-    );
+    final TextEditingController textCtrl = TextEditingController(text: selected.text);
 
     Get.dialog(
       AlertDialog(
@@ -313,19 +261,20 @@ class AppController extends GetxController {
                 t.isSelected = false;
               }
 
-              texts.add(
-                EditableTextModel(
-                  text: textCtrl.text,
-                  x: selected.x + 20,
-                  y: selected.y + 20,
-                  fontSize: selected.fontSize,
-                  color: selected.color,
-                  fontWeight: selected.fontWeight,
-                  fontStyle: selected.fontStyle,
-                  isSelected: true,
-                ),
+              final newModel = EditableTextModel(
+                text: textCtrl.text,
+                x: selected.x + 20,
+                y: selected.y + 20,
+                fontSize: selected.fontSize,
+                color: selected.color,
+                fontWeight: selected.fontWeight,
+                fontStyle: selected.fontStyle,
+                isSelected: true,
               );
 
+              newModel.updateRelative(imageWidth, imageHeight);
+
+              texts.add(newModel);
               texts.refresh();
               Get.back();
             },
@@ -334,6 +283,48 @@ class AppController extends GetxController {
         ],
       ),
     );
+  }
+
+  void loadWebTextJson(List<Map<String, dynamic>> webJson) {
+    if (imageWidth == 0 || imageHeight == 0) return;
+
+    texts.clear();
+    hasLoadedWebJson = true;
+
+    for (var map in webJson) {
+      final dto = EditableTextDTO.fromJson(map);
+
+      final item = EditableTextModel(
+        text: dto.text,
+        relativeX: dto.xPercent,
+        relativeY: dto.yPercent,
+        relativeFontSize: dto.fontSizePercent,
+        x:0,
+        y:0,
+        // x: dto.xPercent * imageWidth,
+        // y: dto.yPercent * imageHeight,
+        fontSize: dto.fontSizePercent * imageWidth,
+        color: Color(int.parse('FF${dto.color}', radix: 16)),
+        fontWeight: parseFontWeight(dto.fontWeight),
+       // fontStyle: dto.fontStyle == 'italic' ? FontStyle.italic : FontStyle.normal,
+        isSelected: false,
+      );
+
+      texts.add(item);
+    }
+
+    texts.refresh();
+  }
+
+  void onCanvasResize(double w, double h) {
+    imageWidth = w;
+    imageHeight = h;
+
+    for (final t in texts) {
+      t.updateAbsolute(w, h);
+    }
+
+    texts.refresh();
   }
 
   FontWeight parseFontWeight(String str) {
@@ -353,56 +344,13 @@ class AppController extends GetxController {
     }
   }
 
-  void loadWebTextJson(List<Map<String, dynamic>> webJson) {
-    if (imageWidth == 0 || imageHeight == 0) return;
+  void submitText(double imageWidth, double imageHeight) {
+    final List<Map<String, dynamic>> textDetails =
+    texts.map((item) => item.toJson(imageWidth, imageHeight)).toList();
 
-    // texts.clear();
-
-    for (var map in webJson) {
-      final dto = EditableTextDTO.fromJson(map);
-
-      final item = dto.toMobileModel(imageWidth, imageHeight);
-      texts.add(item);
-    }
-
-    texts.refresh();
+    print(textDetails);
   }
-
-  // void loadWebTextJson(List<Map<String, dynamic>> webJson) {
-  //   if (imageWidth == 0 || imageHeight == 0) return;
-  //
-  //   for (var map in webJson) {
-  //     final dto = EditableTextDTO.fromJson(map);
-  //
-  //     final item = EditableTextModel(
-  //       text: dto.text,
-  //       x: dto.xPercent * imageWidth,
-  //       y: dto.yPercent * imageHeight,
-  //       fontSize: dto.fontSizePercent * imageWidth,
-  //       color: Color(int.parse('FF${dto.color}', radix: 16)),
-  //       fontWeight: parseFontWeight(dto.fontWeight),
-  //       relativeX: dto.xPercent,
-  //       relativeY: dto.yPercent,
-  //       isSelected: false,
-  //     );
-  //
-  //     texts.add(item);
-  //   }
-  //
-  //   texts.refresh();
-  // }
-
-
-
-  void onCanvasResize(double w, double h) {
-    imageWidth = w;
-    imageHeight = h;
-
-    for (final t in texts) {
-      t.updateAbsolute(w, h);
-    }
-
-    texts.refresh();
-  }
-
 }
+
+
+
