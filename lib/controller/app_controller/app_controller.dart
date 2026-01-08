@@ -90,9 +90,10 @@ class AppController extends GetxController {
       ) {
     item.x += delta.dx;
     item.y += delta.dy;
+
     item.fontSize = (_startFontSize * details.scale).clamp(10.0, 120.0);
     item.rotation = item.initialRotation + details.rotation;
-    item.updateRelative(imageWidth, imageHeight);
+
 
     texts.refresh();
   }
@@ -225,7 +226,8 @@ class AppController extends GetxController {
                 onPressed: () {
                   final index = texts.indexOf(item);
                   if (index != -1) {
-                    texts[index].text = editCtrl.text.isEmpty ? item.text : editCtrl.text;
+                    texts[index].text =
+                    editCtrl.text.isEmpty ? item.text : editCtrl.text;
                     texts[index].updateRelative(imageWidth, imageHeight);
                     texts.refresh();
                   }
@@ -244,7 +246,8 @@ class AppController extends GetxController {
     final selected = texts.firstWhereOrNull((e) => e.isSelected);
     if (selected == null) return;
 
-    final TextEditingController textCtrl = TextEditingController(text: selected.text);
+    final TextEditingController textCtrl =
+    TextEditingController(text: selected.text);
 
     Get.dialog(
       AlertDialog(
@@ -299,14 +302,11 @@ class AppController extends GetxController {
         relativeX: dto.xPercent,
         relativeY: dto.yPercent,
         relativeFontSize: dto.fontSizePercent,
-        x:0,
-        y:0,
-        // x: dto.xPercent * imageWidth,
-        // y: dto.yPercent * imageHeight,
+        x: 0,
+        y: 0,
         fontSize: dto.fontSizePercent * imageWidth,
         color: Color(int.parse('FF${dto.color}', radix: 16)),
         fontWeight: parseFontWeight(dto.fontWeight),
-       // fontStyle: dto.fontStyle == 'italic' ? FontStyle.italic : FontStyle.normal,
         isSelected: false,
       );
 
@@ -351,6 +351,9 @@ class AppController extends GetxController {
     print(textDetails);
   }
 }
+
+
+
 
 
 
